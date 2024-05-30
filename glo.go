@@ -1,7 +1,7 @@
 /*
 Glo Rating System
 
-Details about the algorithm can be found here: 
+Details about the algorithm can be found here:
 https://github.com/ABNiels/DGRDatabase/blob/main/RatingEquation_Notes.md
 */
 
@@ -12,10 +12,10 @@ import (
 )
 
 const (
-	K_HOLE = 35
+	K_HOLE           = 35
 	K_PLAYER_DEFAULT = 12
-	R_WEIGHT = 0.2
-	RD = 360
+	R_WEIGHT         = 0.2
+	RD               = 360
 )
 
 /* Convert strokes (-inf, inf) to score (0, 1) */
@@ -36,11 +36,12 @@ func CalcExpectedScore(holeRating float64, playerRating float64) float64 {
 
 type performanceRatingData struct {
 	holeRatings []float64
-	totalScore float64
-	min_return float64
-	max_return float64
-	iterations int
+	totalScore  float64
+	min_return  float64
+	max_return  float64
+	iterations  int
 }
+
 func CalcPerformanceRating(data performanceRatingData) float64 {
 
 	if data.iterations == 0 {
@@ -74,7 +75,7 @@ func CalcPerformanceRating(data performanceRatingData) float64 {
 }
 
 func ModifyPlayerRating(playerRating float64, performanceRating float64) float64 {
-	return playerRating + R_WEIGHT * (performanceRating - playerRating)
+	return playerRating + R_WEIGHT*(performanceRating-playerRating)
 }
 
 func ModifyHoleRating(holeRating float64, details ...float64) float64 {
@@ -85,17 +86,18 @@ func ModifyHoleRating(holeRating float64, details ...float64) float64 {
 func CalcPlayerKFactor(playerRating float64) float64 {
 	// TODO: Optimize/rework this equation
 	if playerRating < 1900 {
-		return 16 * math.Sqrt(0.5625 + math.Pow(1900 - playerRating, 2)/250000)
-	} 
+		return 16 * math.Sqrt(0.5625+math.Pow(1900-playerRating, 2)/250000)
+	}
 	return K_PLAYER_DEFAULT
 }
 
 type RatingResult struct {
 	playerRating float64
-	holeRating float64
+	holeRating   float64
 }
+
 func CalcRatingUpdates(playerRating float64, holeRating float64,
-                       strokes float64, performanceRating float64) RatingResult {
+	strokes float64, performanceRating float64) RatingResult {
 
 	modifiedHoleRating := ModifyHoleRating(holeRating)
 	modifiedPlayerRating := ModifyPlayerRating(playerRating, performanceRating)
@@ -105,8 +107,8 @@ func CalcRatingUpdates(playerRating float64, holeRating float64,
 
 	playerKFactor := CalcPlayerKFactor(playerRating)
 
-	newPlayerRating := playerRating + playerKFactor * (actualScore - expectedScore)
-	newHoleRating := holeRating + K_HOLE * (expectedScore - actualScore)
+	newPlayerRating := playerRating + playerKFactor*(actualScore-expectedScore)
+	newHoleRating := holeRating + K_HOLE*(expectedScore-actualScore)
 
 	return RatingResult{newPlayerRating, newHoleRating}
 }
