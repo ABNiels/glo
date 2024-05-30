@@ -84,7 +84,7 @@ $$ E = \frac{1}{1+10^{\frac{1550 - 1600}{360}}} = 0.42 $$
 
 Now we can see how many strokes above/below par that is
 
-$$ P = 2\log_{10}\left(\frac{1-0.42}{0.42}\right = 0.278) $$
+$$ P = 2\log_{10}\left(\frac{1-0.42}{0.42}\right) = 0.278 $$
 
 So that means we expected Alice to average 3.278 strokes playing this hole.
 
