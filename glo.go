@@ -92,8 +92,8 @@ func CalcPlayerKFactor(playerRating float64) float64 {
 }
 
 type RatingResult struct {
-	playerRating float64
-	holeRating   float64
+	PlayerRating float64
+	HoleRating   float64
 }
 
 func CalcRatingUpdates(playerRating float64, holeRating float64,

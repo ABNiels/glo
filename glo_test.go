@@ -301,13 +301,13 @@ func Test_CalcRatingUpdates(t *testing.T) {
 	for index, test := range tests {
 		result := CalcRatingUpdates(test.playerRating, test.holeRating, test.strokes, test.performanceRating)
 		expected := test.newRatings
-		if math.Abs(result.playerRating-expected.playerRating) > tolerance*expected.playerRating {
+		if math.Abs(result.PlayerRating-expected.PlayerRating) > tolerance*expected.PlayerRating {
 			t.Errorf("Test %d Player: CalcRatingUpdates() = %f, want %f +-%f",
-				index, result, expected, expected.playerRating*tolerance)
+				index, result, expected, expected.PlayerRating*tolerance)
 		}
-		if math.Abs(result.holeRating-expected.holeRating) > tolerance*expected.holeRating {
+		if math.Abs(result.HoleRating-expected.HoleRating) > tolerance*expected.HoleRating {
 			t.Errorf("Test %d Hole: CalcRatingUpdates() = %f, want %f +-%f",
-				index, result, expected, expected.holeRating*tolerance)
+				index, result, expected, expected.HoleRating*tolerance)
 		}
 	}
 }
