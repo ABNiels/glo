@@ -2,7 +2,7 @@
 Glo Rating System
 
 Details about the algorithm can be found here:
-https://github.com/ABNiels/DGRDatabase/blob/main/RatingEquation_Notes.md
+https://github.com/ABNiels/glo/blob/main/README.md
 */
 
 package glo
