@@ -19,18 +19,18 @@ const (
 )
 
 /* Convert strokes (-inf, inf) to score (0, 1) */
-func toScore(strokes float64) float64 {
+func ToScore(strokes float64) float64 {
 	// Could just use a lookup table if no use case for converting float strokes
 	return 1 / (1 + math.Pow(10, strokes/2))
 }
 
 /* Convert score to strokes */
-func toStrokes(score float64) float64 {
+func ToStrokes(score float64) float64 {
 	return 2 * math.Log10((1-score)/score)
 }
 
 /* Calculate expected score */
-func calcExpectedScore(holeRating float64, playerRating float64) float64 {
+func CalcExpectedScore(holeRating float64, playerRating float64) float64 {
 	return 1 / (1 + math.Pow(10, (holeRating-playerRating)/RD))
 }
 
@@ -41,7 +41,7 @@ type performanceRatingData struct {
 	max_return float64
 	iterations int
 }
-func calcPerformanceRating(data performanceRatingData) float64 {
+func CalcPerformanceRating(data performanceRatingData) float64 {
 
 	if data.iterations == 0 {
 		data.iterations = 8
@@ -59,7 +59,7 @@ func calcPerformanceRating(data performanceRatingData) float64 {
 		offset /= 2
 		sum = 0
 		for _, holeRating := range data.holeRatings {
-			sum += calcExpectedScore(holeRating, performanceRating)
+			sum += CalcExpectedScore(holeRating, performanceRating)
 		}
 		if sum < data.totalScore {
 			performanceRating += offset
@@ -73,16 +73,16 @@ func calcPerformanceRating(data performanceRatingData) float64 {
 	return performanceRating
 }
 
-func modifyPlayerRating(playerRating float64, performanceRating float64) float64 {
+func ModifyPlayerRating(playerRating float64, performanceRating float64) float64 {
 	return playerRating + R_WEIGHT * (performanceRating - playerRating)
 }
 
-func modifyHoleRating(holeRating float64, details ...float64) float64 {
+func ModifyHoleRating(holeRating float64, details ...float64) float64 {
 	// TODO: Decide what conditions/values to apply
 	return holeRating
 }
 
-func calcPlayerKFactor(playerRating float64) float64 {
+func CalcPlayerKFactor(playerRating float64) float64 {
 	// TODO: Optimize/rework this equation
 	if playerRating < 1900 {
 		return 16 * math.Sqrt(0.5625 + math.Pow(1900 - playerRating, 2)/250000)
@@ -94,16 +94,16 @@ type RatingResult struct {
 	playerRating float64
 	holeRating float64
 }
-func calcRatingUpdates(playerRating float64, holeRating float64,
+func CalcRatingUpdates(playerRating float64, holeRating float64,
                        strokes float64, performanceRating float64) RatingResult {
 
-	modifiedHoleRating := modifyHoleRating(holeRating)
-	modifiedPlayerRating := modifyPlayerRating(playerRating, performanceRating)
+	modifiedHoleRating := ModifyHoleRating(holeRating)
+	modifiedPlayerRating := ModifyPlayerRating(playerRating, performanceRating)
 
-	expectedScore := calcExpectedScore(modifiedHoleRating, modifiedPlayerRating)
-	actualScore := toScore(strokes)
+	expectedScore := CalcExpectedScore(modifiedHoleRating, modifiedPlayerRating)
+	actualScore := ToScore(strokes)
 
-	playerKFactor := calcPlayerKFactor(playerRating)
+	playerKFactor := CalcPlayerKFactor(playerRating)
 
 	newPlayerRating := playerRating + playerKFactor * (actualScore - expectedScore)
 	newHoleRating := holeRating + K_HOLE * (expectedScore - actualScore)
