@@ -91,24 +91,59 @@ func CalcPlayerKFactor(playerRating float64) float64 {
 	return K_PLAYER_DEFAULT
 }
 
+type StreamRatingData struct {
+	PlayerRating      float64
+	HoleRating        float64
+	PerformanceRating float64
+	Strokes           float64
+}
 type RatingResult struct {
 	PlayerRating float64
 	HoleRating   float64
 }
 
-func CalcRatingUpdates(playerRating float64, holeRating float64,
-	strokes float64, performanceRating float64) RatingResult {
+func StreamRatingUpdate(data StreamRatingData) RatingResult {
 
-	modifiedHoleRating := ModifyHoleRating(holeRating)
-	modifiedPlayerRating := ModifyPlayerRating(playerRating, performanceRating)
+	modifiedHoleRating := ModifyHoleRating(data.HoleRating)
+	modifiedPlayerRating := ModifyPlayerRating(data.PlayerRating, data.PerformanceRating)
 
 	expectedScore := CalcExpectedScore(modifiedHoleRating, modifiedPlayerRating)
-	actualScore := ToScore(strokes)
+	actualScore := ToScore(data.Strokes)
 
-	playerKFactor := CalcPlayerKFactor(playerRating)
+	playerKFactor := CalcPlayerKFactor(data.PlayerRating)
 
-	newPlayerRating := playerRating + playerKFactor*(actualScore-expectedScore)
-	newHoleRating := holeRating + K_HOLE*(expectedScore-actualScore)
+	newPlayerRating := data.PlayerRating + playerKFactor*(actualScore-expectedScore)
+	newHoleRating := data.HoleRating + K_HOLE*(expectedScore-actualScore)
 
 	return RatingResult{newPlayerRating, newHoleRating}
+}
+
+type BatchRatingData struct {
+	PlayerRating       float64
+	HoleRatings        []float64
+	PerformanceRatings []float64
+	Strokes            []float64
+}
+
+func BatchRatingUpdate(data BatchRatingData) float64 {
+	totalExpectedScore := 0.0
+	totalActualScore := 0.0
+	modifiedPlayerRating := 0.0
+	modifiedHoleRating := 0.0
+
+	for i := 0; i < len(data.HoleRatings); i++ {
+		modifiedPlayerRating = ModifyPlayerRating(data.PlayerRating, data.PerformanceRatings[i])
+		modifiedHoleRating = ModifyHoleRating(data.HoleRatings[i])
+
+		expectedScore := CalcExpectedScore(modifiedHoleRating, modifiedPlayerRating)
+		actualScore := ToScore(data.Strokes[i])
+
+		totalExpectedScore += expectedScore
+		totalActualScore += actualScore
+	}
+
+	playerKFactor := CalcPlayerKFactor(data.PlayerRating)
+
+	newPlayerRating := data.PlayerRating + playerKFactor*(totalActualScore-totalExpectedScore)
+	return newPlayerRating
 }

@@ -239,58 +239,54 @@ func Test_CalcPlayerKFactor(t *testing.T) {
 	}
 }
 
-func Test_CalcRatingUpdates(t *testing.T) {
+func Test_StreamRatingUpdate(t *testing.T) {
 	// ------------------------ Setup ------------------------
 	tolerance := 0.0005
 	type testArgs struct {
-		playerRating      float64
-		holeRating        float64
-		strokes           float64
-		performanceRating float64
-		newRatings        RatingResult
+		data       StreamRatingData
+		newRatings RatingResult
 	}
 	tests := []testArgs{
 		testArgs{
-			playerRating:      1500,
-			holeRating:        1500,
-			strokes:           0,
-			performanceRating: 1500,
+			data: StreamRatingData{
+				PlayerRating:      1500,
+				HoleRating:        1500,
+				PerformanceRating: 1500,
+				Strokes:           0,
+			},
 			newRatings: RatingResult{
 				1500, 1500,
 			},
 		},
 		testArgs{
-			playerRating:      1680,
-			holeRating:        1500,
-			strokes:           -1,
-			performanceRating: 1680,
+			data: StreamRatingData{
+				PlayerRating:      1680,
+				HoleRating:        1500,
+				PerformanceRating: 1680,
+				Strokes:           -1,
+			},
 			newRatings: RatingResult{
 				1680, 1500,
 			},
 		},
 		testArgs{
-			playerRating:      1500,
-			holeRating:        1500,
-			strokes:           -1,
-			performanceRating: 1700,
-			newRatings: RatingResult{
-				1503.44, 1493.13,
+			data: StreamRatingData{
+				PlayerRating:      1480,
+				HoleRating:        1300,
+				PerformanceRating: 1480,
+				Strokes:           -1,
 			},
-		},
-		testArgs{
-			playerRating:      1480,
-			holeRating:        1300,
-			strokes:           -1,
-			performanceRating: 1480,
 			newRatings: RatingResult{
 				1480, 1300,
 			},
 		},
 		testArgs{
-			playerRating:      1480,
-			holeRating:        1300,
-			strokes:           1,
-			performanceRating: 1300,
+			data: StreamRatingData{
+				PlayerRating:      1480,
+				HoleRating:        1300,
+				PerformanceRating: 1300,
+				Strokes:           1,
+			},
 			newRatings: RatingResult{
 				1471.44, 1316.62,
 			},
@@ -299,15 +295,72 @@ func Test_CalcRatingUpdates(t *testing.T) {
 
 	// ------------------------ Tests ------------------------
 	for index, test := range tests {
-		result := CalcRatingUpdates(test.playerRating, test.holeRating, test.strokes, test.performanceRating)
+		result := StreamRatingUpdate(test.data)
 		expected := test.newRatings
 		if math.Abs(result.PlayerRating-expected.PlayerRating) > tolerance*expected.PlayerRating {
-			t.Errorf("Test %d Player: CalcRatingUpdates() = %f, want %f +-%f",
+			t.Errorf("Test %d Player: StreamRatingUpdate() = %f, want %f +-%f",
 				index, result, expected, expected.PlayerRating*tolerance)
 		}
 		if math.Abs(result.HoleRating-expected.HoleRating) > tolerance*expected.HoleRating {
-			t.Errorf("Test %d Hole: CalcRatingUpdates() = %f, want %f +-%f",
+			t.Errorf("Test %d Hole: StreamRatingUpdate() = %f, want %f +-%f",
 				index, result, expected, expected.HoleRating*tolerance)
+		}
+	}
+}
+
+func Test_BatchRatingUpdate(t *testing.T) {
+	// ------------------------ Setup ------------------------
+	tolerance := 0.0005
+	type testArgs struct {
+		data      BatchRatingData
+		newRating float64
+	}
+	tests := []testArgs{
+		testArgs{
+			data: BatchRatingData{
+				PlayerRating:       1500,
+				HoleRatings:        []float64{1500, 1500, 1500},
+				PerformanceRatings: []float64{1500, 1500, 1500},
+				Strokes:            []float64{0, 0, 0},
+			},
+			newRating: 1500,
+		},
+		testArgs{
+			data: BatchRatingData{
+				PlayerRating:       1500,
+				HoleRatings:        []float64{1680, 1500},
+				PerformanceRatings: []float64{1500, 1500},
+				Strokes:            []float64{0, 0},
+			},
+			newRating: 1504.55,
+		},
+		testArgs{
+			data: BatchRatingData{
+				PlayerRating:       1500,
+				HoleRatings:        []float64{1680, 1500, 1500, 1500, 1500, 1500},
+				PerformanceRatings: []float64{1500, 1500, 1500, 1500, 1500, 1500},
+				Strokes:            []float64{0, 0, 0, 0, 0, 0},
+			},
+			newRating: 1504.55,
+		},
+		testArgs{
+			data: BatchRatingData{
+				PlayerRating:       1500,
+				HoleRatings:        []float64{1500, 1500, 1500, 1500, 1500, 1500},
+				PerformanceRatings: []float64{1500, 1500, 1500, 1500, 1500, 1500},
+				Strokes:            []float64{-1, 1, -1, 1, -1, 1},
+			},
+			newRating: 1500,
+		},
+	}
+
+	// ------------------------ Tests ------------------------
+	for index, test := range tests {
+		result := BatchRatingUpdate(test.data)
+		expected := test.newRating
+		if math.Abs(result-expected) > tolerance*expected {
+			t.Errorf("Test %d Player: BatchRatingUpdate() = %f, want %f +-%f",
+				index, result, expected, expected*tolerance)
 		}
 	}
 }
