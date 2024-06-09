@@ -105,5 +105,40 @@ $$ R_n = 1600 + 35\left(0.42-0.76\right) = 1588.13 $$
 ## Mental Math
 Alice and Bob want to play against each other at the local 18 hole course. Alice just got her new rating of 1555.56 and Bob is rated a whopping 1643. Because he is rated ~90 points higher, he should take a handicap of +9 to even things out for the round, or an extra stroke every other hole.
 
+# Example Library Usage
+```
+/* Example usage of glo.
+
+Calculates the performance rating and new player rating after a single hole
+*/
+
+package main
+import (
+	"fmt"
+	"github.com/ABNiels/glo"
+)
+
+func main() {
+	holeHistory := glo.PerformanceRatingData{
+		HoleRatings: []glo.GloRating{1600, 1625, 1650, 1600, 1625},
+		TotalScore: glo.ToScore(1) + glo.ToScore(1) + glo.ToScore(2) + glo.ToScore(1) + glo.ToScore(3),
+	}
+
+	oldPlayerRating := 1550.0
+	holeRating := 1600.0
+	performanceRating := glo.CalcPerformanceRating(holeHistory)
+
+	ratingData := glo.StreamRatingData{
+		PlayerRating: oldPlayerRating,
+		HoleRating: holeRating,
+		PerformanceRating: performanceRating,
+		Strokes: 0,
+	}
+
+	ratingUpdate := glo.StreamRatingUpdate(ratingData)
+	fmt.Println(fmt.Sprintf("%0.2f (%0.2f) x %0.2f -> %0.2f", oldPlayerRating, performanceRating, holeRating, ratingUpdate.PlayerRating))
+}
+```
+
 # Uses
 This can be used in a scorekeeping app or spreadsheet to even out players with varying ratings. Each player can instead play against their own Expected Score to keep everyone's numbers close together from the start to the end of the round.
