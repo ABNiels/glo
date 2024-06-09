@@ -11,7 +11,7 @@ import (
 	"math"
 )
 
-type GloRating = float64 
+type GloRating = float64
 type GloScore = float64
 
 const (
@@ -42,24 +42,24 @@ type performanceRatingData struct {
 	totalScore  GloScore
 	min_return  GloRating
 	max_return  GloRating
-	iterations  int
+	tolerance   float64
 }
 
 func CalcPerformanceRating(data performanceRatingData) GloScore {
 
-	if data.iterations == 0 {
-		data.iterations = 8
+	if data.tolerance == 0 {
+		data.tolerance = 0.25
 	}
 	if data.max_return == 0 {
 		data.max_return = 3000
 	}
 	// TODO: Add input validation
 
-	sum := 0.0 
+	sum := 0.0
 	offset := (data.max_return - data.min_return) / 2
 	performanceRating := data.min_return + offset
 
-	for i := 0; i < data.iterations; i++ {
+	for offset > data.tolerance {
 		offset /= 2
 		sum = 0
 		for _, holeRating := range data.holeRatings {

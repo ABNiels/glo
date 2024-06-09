@@ -8,7 +8,7 @@ import (
 func Test_ToStrokes(t *testing.T) {
 	tolerance := 0.001
 	type testArgs struct {
-		score   float64
+		score   GloScore
 		strokes float64
 	}
 	tests := []testArgs{
@@ -40,7 +40,7 @@ func Test_ToScore(t *testing.T) {
 	tolerance := 0.001
 	type testArgs struct {
 		strokes float64
-		score   float64
+		score   GloScore
 	}
 	tests := []testArgs{
 		testArgs{-2, 0.909090909},
@@ -65,9 +65,9 @@ func Test_ToScore(t *testing.T) {
 func Test_CalcExpectedScore(t *testing.T) {
 	tolerance := 0.001
 	type testArgs struct {
-		holeRating   float64
-		playerRating float64
-		score        float64
+		holeRating   GloRating
+		playerRating GloRating
+		score        GloScore
 	}
 	tests := []testArgs{
 		testArgs{1500, 1500, 0.5},
@@ -88,71 +88,70 @@ func Test_CalcExpectedScore(t *testing.T) {
 }
 
 func Test_CalcPerformanceRating(t *testing.T) {
-	tolerance := 0.005
 	type testArgs struct {
 		data              performanceRatingData
-		performanceRating float64
+		performanceRating GloRating
 	}
 	tests := []testArgs{
 		testArgs{
 			performanceRatingData{
-				[]float64{1500},
+				[]GloRating{1500},
 				0.5, 0, 0, 0,
 			},
 			1500,
 		},
 		testArgs{
 			performanceRatingData{
-				[]float64{1500, 1500},
-				1, 0, 0, 0,
+				[]GloRating{1500, 1500},
+				1, 0, 0, 10,
 			},
 			1500,
 		},
 		testArgs{
 			performanceRatingData{
-				[]float64{1300, 1400},
+				[]GloRating{1300, 1400},
 				1, 0, 0, 0,
 			},
 			1350,
 		},
 		testArgs{
 			performanceRatingData{
-				[]float64{1300, 1400, 1800},
+				[]GloRating{1300, 1400, 1800},
 				1.5, 0, 0, 0,
 			},
 			1480,
 		},
 		testArgs{
 			performanceRatingData{
-				[]float64{1500, 1500},
+				[]GloRating{1500, 1500},
 				1.519493854, 0, 0, 0,
 			},
 			1680,
 		},
 		testArgs{
 			performanceRatingData{
-				[]float64{1500, 1500},
+				[]GloRating{1500, 1500},
 				2, 0, 0, 0,
 			},
 			3000,
 		},
 		testArgs{
 			performanceRatingData{
-				[]float64{1500, 1500},
+				[]GloRating{1500, 1500},
 				2, 0, 2000, 0,
 			},
 			2000,
 		},
 		testArgs{
 			performanceRatingData{
-				[]float64{1500, 1500},
+				[]GloRating{1500, 1500},
 				0, 0, 0, 0,
 			},
-			5.859, // Lower with more iterations
+			0,
 		},
 		testArgs{
 			performanceRatingData{
-				[]float64{1500, 1500},
+				[]GloRating{1500, 1500},
 				0, 1000, 0, 0,
 			},
 			1000,
@@ -162,8 +161,13 @@ func Test_CalcPerformanceRating(t *testing.T) {
 	for index, test := range tests {
 		result := CalcPerformanceRating(test.data)
 		expected := test.performanceRating
-		if math.Abs(result-expected) > tolerance*expected {
-			t.Errorf("Test %d: CalcPerformanceRating() = %f, want %f +-%f", index, result, expected, expected*tolerance)
+		tolerance := test.data.tolerance
+		if tolerance == 0 {
+			tolerance = 0.25
+		}
+
+		if math.Abs(result-expected) > tolerance {
+			t.Errorf("Test %d: CalcPerformanceRating() = %f, want %f +-%f", index, result, expected, tolerance)
 		}
 	}
 }
@@ -171,9 +175,9 @@ func Test_CalcPerformanceRating(t *testing.T) {
 func Test_ModifyPlayerRating(t *testing.T) {
 	tolerance := 0.001
 	type testArgs struct {
-		playerRating         float64
-		performanceRating    float64
-		modifiedPlayerRating float64
+		playerRating         GloRating
+		performanceRating    GloRating
+		modifiedPlayerRating GloRating
 	}
 	tests := []testArgs{
 		testArgs{1500, 1500, 1500},
@@ -196,8 +200,8 @@ func Test_ModifyHoleRating(t *testing.T) {
 	// ------------------------ Setup ------------------------
 	tolerance := 0.001
 	type testArgs struct {
-		holeRating           float64
-		modifiedPlayerRating float64
+		holeRating           GloRating
+		modifiedPlayerRating GloRating
 	}
 	tests := []testArgs{
 		testArgs{1500, 1500},
@@ -218,7 +222,7 @@ func Test_CalcPlayerKFactor(t *testing.T) {
 	// ------------------------ Setup ------------------------
 	tolerance := 0.001
 	type testArgs struct {
-		playerRating  float64
+		playerRating  GloRating
 		playerKFactor float64
 	}
 	tests := []testArgs{
@@ -313,42 +317,42 @@ func Test_BatchRatingUpdate(t *testing.T) {
 	tolerance := 0.0005
 	type testArgs struct {
 		data      BatchRatingData
-		newRating float64
+		newRating GloRating
 	}
 	tests := []testArgs{
 		testArgs{
 			data: BatchRatingData{
 				PlayerRating:       1500,
-				HoleRatings:        []float64{1500, 1500, 1500},
-				PerformanceRatings: []float64{1500, 1500, 1500},
-				Strokes:            []float64{0, 0, 0},
+				HoleRatings:        []GloRating{1500, 1500, 1500},
+				PerformanceRatings: []GloRating{1500, 1500, 1500},
+				Strokes:            []GloScore{0, 0, 0},
 			},
 			newRating: 1500,
 		},
 		testArgs{
 			data: BatchRatingData{
 				PlayerRating:       1500,
-				HoleRatings:        []float64{1680, 1500},
-				PerformanceRatings: []float64{1500, 1500},
-				Strokes:            []float64{0, 0},
+				HoleRatings:        []GloRating{1680, 1500},
+				PerformanceRatings: []GloRating{1500, 1500},
+				Strokes:            []GloScore{0, 0},
 			},
 			newRating: 1504.55,
 		},
 		testArgs{
 			data: BatchRatingData{
 				PlayerRating:       1500,
-				HoleRatings:        []float64{1680, 1500, 1500, 1500, 1500, 1500},
-				PerformanceRatings: []float64{1500, 1500, 1500, 1500, 1500, 1500},
-				Strokes:            []float64{0, 0, 0, 0, 0, 0},
+				HoleRatings:        []GloRating{1680, 1500, 1500, 1500, 1500, 1500},
+				PerformanceRatings: []GloRating{1500, 1500, 1500, 1500, 1500, 1500},
+				Strokes:            []GloScore{0, 0, 0, 0, 0, 0},
 			},
 			newRating: 1504.55,
 		},
 		testArgs{
 			data: BatchRatingData{
 				PlayerRating:       1500,
-				HoleRatings:        []float64{1500, 1500, 1500, 1500, 1500, 1500},
-				PerformanceRatings: []float64{1500, 1500, 1500, 1500, 1500, 1500},
-				Strokes:            []float64{-1, 1, -1, 1, -1, 1},
+				HoleRatings:        []GloRating{1500, 1500, 1500, 1500, 1500, 1500},
+				PerformanceRatings: []GloRating{1500, 1500, 1500, 1500, 1500, 1500},
+				Strokes:            []GloScore{-1, 1, -1, 1, -1, 1},
 			},
 			newRating: 1500,
 		},
