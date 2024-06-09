@@ -89,68 +89,68 @@ func Test_CalcExpectedScore(t *testing.T) {
 
 func Test_CalcPerformanceRating(t *testing.T) {
 	type testArgs struct {
-		data              performanceRatingData
+		data              PerformanceRatingData
 		performanceRating GloRating
 	}
 	tests := []testArgs{
 		testArgs{
-			performanceRatingData{
+			PerformanceRatingData{
 				[]GloRating{1500},
 				0.5, 0, 0, 0,
 			},
 			1500,
 		},
 		testArgs{
-			performanceRatingData{
+			PerformanceRatingData{
 				[]GloRating{1500, 1500},
 				1, 0, 0, 10,
 			},
 			1500,
 		},
 		testArgs{
-			performanceRatingData{
+			PerformanceRatingData{
 				[]GloRating{1300, 1400},
 				1, 0, 0, 0,
 			},
 			1350,
 		},
 		testArgs{
-			performanceRatingData{
+			PerformanceRatingData{
 				[]GloRating{1300, 1400, 1800},
 				1.5, 0, 0, 0,
 			},
 			1480,
 		},
 		testArgs{
-			performanceRatingData{
+			PerformanceRatingData{
 				[]GloRating{1500, 1500},
 				1.519493854, 0, 0, 0,
 			},
 			1680,
 		},
 		testArgs{
-			performanceRatingData{
+			PerformanceRatingData{
 				[]GloRating{1500, 1500},
 				2, 0, 0, 0,
 			},
 			3000,
 		},
 		testArgs{
-			performanceRatingData{
+			PerformanceRatingData{
 				[]GloRating{1500, 1500},
 				2, 0, 2000, 0,
 			},
 			2000,
 		},
 		testArgs{
-			performanceRatingData{
+			PerformanceRatingData{
 				[]GloRating{1500, 1500},
 				0, 0, 0, 0,
 			},
 			0,
 		},
 		testArgs{
-			performanceRatingData{
+			PerformanceRatingData{
 				[]GloRating{1500, 1500},
 				0, 1000, 0, 0,
 			},
@@ -161,7 +161,7 @@ func Test_CalcPerformanceRating(t *testing.T) {
 	for index, test := range tests {
 		result := CalcPerformanceRating(test.data)
 		expected := test.performanceRating
-		tolerance := test.data.tolerance
+		tolerance := test.data.Tolerance
 		if tolerance == 0 {
 			tolerance = 0.25
 		}

@@ -37,42 +37,41 @@ func CalcExpectedScore(holeRating GloRating, playerRating GloRating) GloScore {
 	return 1 / (1 + math.Pow(10, (holeRating-playerRating)/RD))
 }
 
-type performanceRatingData struct {
-	holeRatings []GloRating
-	totalScore  GloScore
-	min_return  GloRating
-	max_return  GloRating
-	tolerance   float64
+type PerformanceRatingData struct {
+	HoleRatings []GloRating
+	TotalScore  GloScore
+	MinReturn  GloRating
+	MaxReturn  GloRating
+	Tolerance   float64
 }
 
-func CalcPerformanceRating(data performanceRatingData) GloScore {
+func CalcPerformanceRating(data PerformanceRatingData) GloScore {
 
-	if data.tolerance == 0 {
-		data.tolerance = 0.25
+	if data.Tolerance == 0 {
+		data.Tolerance = 0.25
 	}
-	if data.max_return == 0 {
-		data.max_return = 3000
+	if data.MaxReturn == 0 {
+		data.MaxReturn = 3000
 	}
 	// TODO: Add input validation
 
 	sum := 0.0
-	offset := (data.max_return - data.min_return) / 2
-	performanceRating := data.min_return + offset
+	offset := (data.MaxReturn - data.MinReturn) / 2
+	performanceRating := data.MinReturn + offset
 
-	for offset > data.tolerance {
+	for offset > data.Tolerance {
 		offset /= 2
 		sum = 0
-		for _, holeRating := range data.holeRatings {
+		for _, holeRating := range data.HoleRatings {
 			sum += CalcExpectedScore(holeRating, performanceRating)
 		}
-		if sum < data.totalScore {
+		if sum < data.TotalScore {
 			performanceRating += offset
-		} else if sum > data.totalScore {
+		} else if sum > data.TotalScore {
 			performanceRating -= offset
 		} else { // Unlikely
 			return performanceRating
 		}
-		// TODO: Add tolerance for early return near min/max
 	}
 	return performanceRating
 }
