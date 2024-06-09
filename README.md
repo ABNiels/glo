@@ -106,7 +106,7 @@ $$ R_n = 1600 + 35\left(0.42-0.76\right) = 1588.13 $$
 Alice and Bob want to play against each other at the local 18 hole course. Alice just got her new rating of 1555.56 and Bob is rated a whopping 1643. Because he is rated ~90 points higher, he should take a handicap of +9 to even things out for the round, or an extra stroke every other hole.
 
 # Example Library Usage
-```
+```go
 /* Example usage of glo.
 
 Calculates the performance rating and new player rating after a single hole
